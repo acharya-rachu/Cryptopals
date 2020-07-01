@@ -11,32 +11,36 @@ def frequency_calculator(decrypted_text):
     return score    
 
 # Decryption Function 
-def decryption(cipher_bytes, key):
+def decryption_function(cipher_bytes, key):
     decrypted_string = ''
     
-    for i in range(len(cipher_bytes) // 2):
+    for i in range(len(cipher_bytes)):
         decrypted_string = decrypted_string + chr(cipher_bytes[i] ^ key)
  
     return decrypted_string
-    
-# Cipher Text
-cipher_hex = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" 
-cipher_bytes = bytes.fromhex(cipher_hex)
-score = []
-keys = []
 
-# Iterate through All possible ASCII Value Keys
-for i in range(0, 128):
-    decrypted_text = decryption(cipher_bytes, i)
-    score.append(frequency_calculator(decrypted_text))
-    keys.append(chr(i))
+def main():
+    # Cipher Text
+    cipher_hex = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" 
+    cipher_bytes = bytes.fromhex(cipher_hex)
+    score = []
+    keys = []
 
-# Zip score and corresponding key to sort descendinly
-zipped_list = sorted(zip(score, keys), key = lambda x:x[0], reverse = True)   
+    # Iterate through All possible ASCII Value Keys
+    for i in range(0, 128):
+        decrypted_text = decryption_function(cipher_bytes, i)
+        score.append(frequency_calculator(decrypted_text))
+        keys.append(chr(i))
 
-# Key, score tuple with the hightest score
-key_score, key = zipped_list[0]
+    # Zip score and corresponding key to sort descendinly
+    zipped_list = sorted(zip(score, keys), key = lambda x:x[0], reverse = True)   
 
-# Final Decrytion of the Cipher Text
-plain_text = decryption(cipher_bytes, ord(key))
-print(plain_text)
+    # Key, score tuple with the hightest score
+    key_score, key = zipped_list[0]
+
+    # Final Decryption of the Cipher Text 
+    plain_text = decryption_function(cipher_bytes, ord(key))
+    print(plain_text)
+
+if __name__ == "__main__":
+    main()
