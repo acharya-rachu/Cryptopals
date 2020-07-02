@@ -1,6 +1,5 @@
 # Cryptopals Set1 Crehallenge 5
-
-# Repeatinf XOR encryption function 
+# Repeating XOR encryption function 
 def repeating_xor(plain_text, key):
     key_len = len(key)
     text_len = len(plain_text)
