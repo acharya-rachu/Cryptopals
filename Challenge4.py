@@ -45,7 +45,6 @@ top_score, top_key = cross_sort(best_scores, best_keys)
 position = best_scores.index(top_score)
 cipher_line = all_lines[position]
 cipher_bytes = bytes.fromhex(cipher_line)
-print(cipher_bytes)
 plain_text = decryption_function(cipher_bytes, ord(top_key))
 
 print(plain_text)
