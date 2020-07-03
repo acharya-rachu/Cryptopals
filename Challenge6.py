@@ -1,4 +1,8 @@
+# Import Dependancies 
 import base64
+from itertools import zip_longest
+from Challenge3 import decryption_function, frequency_calculator
+from Challenge5 import repeating_xor
 
 # Function that returns list of ascii values for all char in plain_text
 def get_string_ascii(plain_text):
@@ -42,11 +46,12 @@ def hamming_distance(string1, string2):
         distance += weight
     return distance
 
-
-def cross_sort(list1, list2):
-    zipped_list = sorted(zip(list1, list2), key = lambda x:x[0], reverse = False)
+# Function to sort list1 and list2 in ascending or descending order based on reverse
+def cross_sort(list1, list2, reverse):
+    zipped_list = sorted(zip(list1, list2), key = lambda x:x[0], reverse = reverse)
     return zipped_list[0] 
 
+# Function that returns the optimum keysize for a cipher_text
 def calculate_keysize(lower_limit, upper_limit, cipher_text):
     mean_distances = []
     size = []
@@ -64,30 +69,66 @@ def calculate_keysize(lower_limit, upper_limit, cipher_text):
         mean = sum(all_distances) / (len(all_distances) * key_size)
         mean_distances.append(round(mean, 5))
        
-   # print(mean_distances)
-
-    distance, optimum_size = cross_sort(mean_distances, size)
+    # Sort in ascending order and get top result
+    distance, optimum_size = cross_sort(mean_distances, size, False)
     
     return optimum_size
 
+# Funtion that returns list of strings encrypted by same key 
+def transpose_text(cipher_text, key_size):
+    text_blocks = [cipher_text[i: i + key_size] for i in range(len(cipher_text)) if i % key_size == 0]
+    trans_text_temp = list(map(list, zip_longest(*text_blocks, fillvalue= '\0')))
+    trans_text_blocks = []
+
+    for block in trans_text_temp:
+        trans_text_blocks.append("".join(block))
+    return trans_text_blocks
+
+# Main Function     
+def main():  
+
+    with open("6.txt", 'r') as text_file:
+        b64_text = ""
+        for line in text_file.readlines():
+            b64_text += "" + line.rstrip('\n')
     
-def main():            
-    distance = hamming_distance("this is a test", "wokka wokka!!!")
-    print(distance)
-
-    text_file = open("6.txt", 'r')
-    b64_text = ""
-    for line in text_file.readlines():
-        b64_text += line.rstrip("\n")
-    text_file.close()
-
+    # Pre-processing encoded text 
     base64_bytes = b64_text.encode('ascii')
     ascii_bytes = base64.b64decode(base64_bytes)
     cipher_text = ascii_bytes.decode('ascii')
+    
+    # Get optimum key_size for the cipher_text
+    opt_key_size = calculate_keysize(2, 40, cipher_text)
+    
+    # List of Strings encrypted by same keys
+    text_list = transpose_text(cipher_text, opt_key_size)
+   
+    final_key = ""
 
-    key_size = calculate_keysize(2, 40, cipher_text)
+    # Perfrom Frequency Analysis on string to guess corrsponding key
+    for line in text_list:
+        cipher_bytes = bytes(line, 'ascii')
+        
+        # Initialize lists to store scores for all possible keys
+        key_scores = []
+        keys = []
+    
+        # For a given line, decrypt it with all possible keys
+        for i in range(0, 128):
+            decrypted_text = decryption_function(cipher_bytes, i)
+            key_scores.append(frequency_calculator(decrypted_text))
+            keys.append(chr(i))
+        
+        # Store the key with the highest score
+        top_key_score, key = cross_sort(key_scores, keys, True)
+        
+        # Combine individual keys to string
+        final_key += key
 
-    print(key_size)
-
+    print("Key Cracked -\n", final_key, sep="")   
+    # Extract Plain Text:
+    plain_text = repeating_xor(ascii_bytes, final_key)
+    print("Decrypted Text -\n", plain_text, sep="")
+    
 if __name__ == "__main__":
     main()

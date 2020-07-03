@@ -1,31 +1,30 @@
 # Cryptopals Set1 Crehallenge 5
 # Repeating XOR encryption function 
-def repeating_xor(plain_text, key):
+def repeating_xor(plain_text_bytes, key):
     key_len = len(key)
-    text_len = len(plain_text)
     encrypted_line = ''
 
-    # List comprehension to create list of indices that point to the beginning of each block 
-    block_indices = [i for i in range(text_len) if i % key_len == 0]
+    # List comprehension to create blocks of bytes 
+    block_indices = [i for i in range(len(plain_text_bytes))if i % key_len == 0]
 
-    # Iterate through Each blocks
+    # Iterate through each blocks of bytes
     for i in block_indices:
-        # Iterate through each char of block
+        # Iterate through each byte
         for j in range(key_len): 
-            if(i + j < text_len):
-                encrypted_line = encrypted_line + (chr(ord(plain_text[i + j]) ^ ord(key[j])))
-                    
-    # ASCII character encoded to hex 
-    hex_encoded_cipher = bytes(encrypted_line, 'ascii').hex()
+            if(i + j < len(plain_text_bytes)):
+                encrypted_line = encrypted_line + (chr(plain_text_bytes[i + j] ^ ord(key[j])))
 
-    return hex_encoded_cipher
-
+    return encrypted_line
+    
 def main():
     plain_text = '''Burning 'em, if you ain't quick and nimble
     I go crazy when I hear a cymbal'''
     key = "ICE"
-    cipher_text = repeating_xor(plain_text, key)
-    print(cipher_text)
+    plain_text_bytes = bytes(plain_text, 'ascii')
+    cipher_text = repeating_xor(plain_text_bytes, key)
+    hex_encoded_cipher = bytes(cipher_text, 'ascii').hex()
+
+    print(hex_encoded_cipher)
 
 if __name__ == "__main__":
     main()
